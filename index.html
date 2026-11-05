@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101827"><title>Controle IPTU RP</title>
+<!-- EmailJS SDK para envio de e-mails via cliente de navegador -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<style>
+:root{--bg:#0b1120;--p:#121d30;--p2:#17263c;--line:#2b3d58;--txt:#eef4ff;--muted:#9aaac2;--blue:#4388ef;--green:#38d39f;--yellow:#f6c85f;--red:#ff6b78}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top left,#192d4c,transparent 42%),var(--bg);color:var(--txt);font:15px/1.5 system-ui,Segoe UI,Arial,sans-serif}.app{max-width:1400px;margin:auto;padding:22px}.top,.brand,.actions,.row,.head,.cardtop,.buttons,.alert{display:flex;gap:12px}.top,.head,.cardtop{align-items:center;justify-content:space-between}.top{flex-wrap:wrap;margin-bottom:22px}.brand{align-items:center}.logo{font-size:27px;background:linear-gradient(135deg,#4388ef,#8875ff);padding:10px 14px;border-radius:14px}h1{margin:0;font-size:clamp(23px,3vw,32px)}h2{font-size:17px;margin:0}.sub,.muted,.hint{color:var(--muted);font-size:12px}.sub{margin:3px 0 0}.actions{flex-wrap:wrap}.btn{cursor:pointer;border:1px solid var(--line);border-radius:9px;background:var(--p2);color:var(--txt);padding:9px 12px;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:all .2s}.btn:hover{filter:brightness(1.15)}.primary{background:var(--blue);border-color:var(--blue);color:white}.danger{background:#321c28;color:#ffb0b8}.small{font-size:12px;padding:7px 9px}
+/* Estilo do botão de auto backup ativo */
+.btn-autobackup-active{background:linear-gradient(135deg,#173c37,#1c524b)!important;border-color:var(--green)!important;color:#79efc5!important}
+.live-clock{background:var(--p2);border:1px solid var(--line);padding:8px 14px;border-radius:10px;text-align:right;display:flex;flex-direction:column;justify-content:center}
+.clock-date{font-size:11px;color:var(--muted);font-weight:600;text-transform:capitalize}
+.clock-time{font-size:15px;font-weight:800;color:var(--txt);font-variant-numeric:tabular-nums;letter-spacing:0.03em}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}.stat,.panel,.property{background:linear-gradient(145deg,#15243a,#101a2b);border:1px solid var(--line);border-radius:14px;overflow:hidden}.stat{padding:16px}.value{font-size:clamp(22px,3vw,30px);font-weight:800;margin-top:7px;overflow-wrap:anywhere}.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start}.head{padding:16px 18px;border-bottom:1px solid var(--line)}.body{padding:18px}.form{display:grid;gap:12px}label{display:block;font-size:12px;font-weight:700;color:#c4d0e3;margin-bottom:5px}input,textarea,select{width:100%;min-width:0;border:1px solid #30435f;background:#0c1423;color:var(--txt);padding:10px 11px;border-radius:8px;font:inherit}textarea{resize:vertical;min-height:75px}.row>*{flex:1;min-width:0}.formbuttons{display:flex;gap:8px}.formbuttons>*{flex:1}.toolbar{display:flex;gap:9px;flex-wrap:wrap;padding:13px;border-bottom:1px solid var(--line)}.toolbar input{flex:1;min-width:190px}.toolbar select{width:auto;min-width:140px}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:13px}.property{padding:15px;min-width:0}.cardimg{width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:10px;border:1px solid var(--line);background:#080d18}.cardtop{align-items:flex-start}.cardtitle{font-weight:800;overflow-wrap:anywhere}.id,.loc{font-size:11px;color:var(--muted);overflow-wrap:anywhere}.badge{font-size:10px;font-weight:800;padding:5px 8px;border-radius:99px;white-space:nowrap}.ok{color:#79efc5;background:#173c37}.soon{color:#ffe08b;background:#42351c}.today{color:#ffd58c;background:#49321c}.late{color:#ff9aa4;background:#47232c}.details{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}.detail{background:#0b1423;padding:9px;border-radius:8px;min-width:0}.detail small{display:block;color:var(--muted);font-size:10px}.detail strong{overflow-wrap:anywhere}.notes{font-size:12px;color:#bdc9db;white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid var(--line);padding-top:9px}.buttons{flex-wrap:wrap;margin-top:12px}.buttons .btn{flex:1}.alerts{display:grid;gap:9px;padding:13px}.alert{align-items:center;background:#172338;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:9px;padding:11px;min-width:0}.alert.late{border-left-color:var(--red)}.alert.today,.alert.soon{border-left-color:var(--yellow)}.alerttext{flex:1;min-width:0}.alerttitle{font-size:12px;font-weight:800;overflow-wrap:anywhere}.alertdesc{font-size:11px;color:var(--muted);overflow-wrap:anywhere}.payalert{opacity:0;visibility:hidden;flex-shrink:0;font-size:11px;padding:8px;border:1px solid #3c5879;border-radius:8px;background:#203957;color:var(--txt);cursor:pointer}.alert:hover .payalert,.alert:focus-within .payalert{opacity:1;visibility:visible}@media(hover:none){.payalert{opacity:1;visibility:visible}}.empty{grid-column:1/-1;text-align:center;padding:30px 12px;color:var(--muted)}.gap{margin-top:18px}.footer{text-align:center;color:#8192ad;font-size:12px;margin:25px 0;line-height:1.6}.footer span{display:block;color:var(--muted);font-size:11px;margin-top:4px}.backdrop{display:none;position:fixed;inset:0;background:#020611d9;align-items:center;justify-content:center;padding:18px;z-index:10}.backdrop.open{display:flex}.modal{width:min(560px,100%);max-height:85vh;overflow:auto;background:var(--p);border:1px solid var(--line);border-radius:14px}.history{padding:14px 0;border-bottom:1px solid var(--line)}.toastarea{position:fixed;right:15px;bottom:15px;z-index:99;display:grid;gap:10px;width:min(380px,calc(100% - 30px))}
+.toast{background:linear-gradient(135deg,#16253b,#0f1a2c);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:10px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,0.6);display:flex;align-items:center;gap:12px;color:var(--txt);animation:slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)}
+.toast.success{border-left-color:var(--green)}.toast.error{border-left-color:var(--red)}.toast.warning{border-left-color:var(--yellow)}
+.toast-icon{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.toast-content{flex:1;font-size:13px;font-weight:600}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@media(max-width:950px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.app{padding:12px}.cards{grid-template-columns:1fr;padding:10px}.body{padding:13px}.row{display:grid;grid-template-columns:1fr}.actions>*{flex:1}.toolbar select{flex:1}.alert{align-items:flex-start}}
+</style></head><body><div class="app">
+<header class="top">
+    <div class="brand"><div class="logo">🏠</div><div><h1>Controle IPTU CASAS MILGRAU RP</h1><p class="sub">Gestão de imóveis, vencimentos e pagamentos</p></div></div>
+    
+    <!-- Relógio e Calendário em Tempo Real -->
+    <div class="live-clock">
+        <div class="clock-date" id="clockDate">Carregando data...</div>
+        <div class="clock-time" id="clockTime">00:00:00</div>
+    </div>
+
+    <div class="actions">
+        <button class="btn" id="browserNotifyBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            🔔 Ativar Notificações
+        </button>
+        <button class="btn" id="autoBackupBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span id="autoBackupLabel">🔄 Auto Backup: OFF</span>
+        </button>
+        <button class="btn" id="sendEmailBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            ✉️ Backup p/ E-mail
+        </button>
+        <button class="btn" id="export">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Exportar backup
+        </button>
+        <button class="btn" id="import">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Importar backup
+        </button>
+        <input id="file" type="file" accept=".json,application/json" hidden>
+    </div>
+</header>
+<section class="stats"><div class="stat"><div class="muted">🏘️ Imóveis cadastrados</div><div class="value" id="total">0</div></div><div class="stat"><div class="muted">💵 Soma dos valores</div><div class="value" id="sum">R$ 0,00</div></div><div class="stat"><div class="muted">⏰ Vencendo em até 7 dias</div><div class="value" id="soonCount">0</div></div><div class="stat"><div class="muted">🚨 Vencidos</div><div class="value" id="lateCount">0</div></div></section>
+<main class="layout"><section class="panel" id="formPanel"><div class="head"><h2 id="formTitle">➕ Cadastrar imóvel</h2></div><div class="body"><form id="form" class="form">
+<div><label for="pid">ID do imóvel *</label><input id="pid" required maxlength="40" placeholder="Ex.: 001 ou CASA-15"></div>
+<div><label for="type">Tipo de imóvel *</label><select id="type" required><option value="Casa">🏠 Casa</option><option value="Mansão">🏰 Mansão</option><option value="Apartamento">🏢 Apartamento</option></select></div>
+<div><label for="name">Nome do imóvel *</label><input id="name" required maxlength="100" placeholder="Ex.: Casa da praça"></div>
+<div><label for="location">Localização *</label><input id="location" required maxlength="150" placeholder="Rua, bairro ou referência"></div>
+<div class="row"><div><label for="value">Valor do IPTU (R$) *</label><input id="value" type="number" required min="0" step=".01" placeholder="500.00"></div><div><label for="due">Próximo vencimento *</label><input id="due" type="date" required></div></div>
+<div><label for="imageFile">Enviar foto do imóvel (Salva internamente)</label><input id="imageFile" type="file" accept="image/*"></div>
+<div><label for="notes">Observações</label><textarea id="notes" maxlength="1000" placeholder="Opcional"></textarea></div><div class="formbuttons"><button class="btn primary" id="save" type="submit">Salvar imóvel</button><button class="btn" id="cancel" type="button" hidden>Cancelar</button></div><p class="hint">A foto é armazenada internamente no navegador e no backup JSON.</p></form></div></section>
+<div><section class="panel"><div class="head"><h2>🚨 Alertas de vencimento</h2><span class="badge soon" id="alertCount">0 alertas</span></div><div class="alerts" id="alerts"><div class="empty">✨ Nenhum alerta por enquanto.</div></div></section>
+<section class="panel gap"><div class="head"><h2>🏡 Imóveis cadastrados</h2><span class="badge ok" id="visible">0 imóveis</span></div><div class="toolbar"><input id="search" type="search" placeholder="🔎 Pesquisar por ID, nome, tipo ou localização"><select id="filter"><option value="all">Todos os imóveis</option><option value="late">Vencidos</option><option value="today">Vencem hoje</option><option value="soon">Próximos (7 dias)</option><option value="ok">Em dia</option></select><select id="sort"><option value="due">Ordenar por vencimento</option><option value="name">Ordenar por nome</option><option value="value">Ordenar por valor</option></select></div><div class="cards" id="cards"><div class="empty">🏠 Nenhum imóvel cadastrado. Use o formulário para começar.</div></div></section></div></main>
+<footer class="footer">
+    Controle IPTU CASAS MILGRAU RP • Faça backups regularmente
+    <span>© Copyright 2026. Todos os direitos reservados.</span>
+</footer>
+</div>
+<div class="backdrop" id="backdrop" role="dialog" aria-modal="true"><div class="modal"><div class="head"><h2 id="modalTitle">Histórico de pagamentos</h2><button class="btn small" id="close">✕ Fechar</button></div><div class="body" id="modalBody"></div></div></div><div class="toastarea" id="toasts" aria-live="polite"></div>
+<script>
+(()=>{"use strict";
+const KEY="controle_iptu_rp_imoveis_v3",AUTO_BACKUP_KEY="controle_iptu_rp_auto_backup",AUTO_BACKUP_STATE_KEY="controle_iptu_rp_autobackup_enabled",LAST_BACKUP_TIME_KEY="controle_iptu_rp_last_autobackup_time",CYCLE=13,$=id=>document.getElementById(id);
+let properties=[],editing=null;
+let currentImageData = "";
+
+// Inicializar EmailJS com a sua Chave Pública real
+if(window.emailjs){ emailjs.init("aKx6Ym4lHGnMaRw5g"); }
+
+const f={pid:$("pid"),type:$("type"),name:$("name"),location:$("location"),value:$("value"),due:$("due"),imageFile:$("imageFile"),notes:$("notes")};
+
+f.imageFile.addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(uploadEvent){
+            currentImageData = uploadEvent.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+const money=n=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(n)||0);
+const today=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+const dateFmt=s=>{if(!s)return "Sem data";let [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("pt-BR")};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const days=(a,b)=>{let [ay,am,ad]=a.split("-").map(Number),[by,bm,bd]=b.split("-").map(Number);return Math.round((Date.UTC(by,bm-1,bd)-Date.UTC(ay,am-1,ad))/86400000)};
+const status=p=>{let d=days(today(),p.due);if(d<0)return{key:"late",label:`Vencido há ${-d} dia(s)`,days:d,icon:"🚨"};if(!d)return{key:"today",label:"Vence hoje",days:d,icon:"⏰"};if(d<=7)return{key:"soon",label:`Vence em ${d} dia(s)`,days:d,icon:"🔔"};return{key:"ok",label:"Em dia",days:d,icon:"✅"}};
+
+const SVG_ICONS = {
+    info: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4388ef" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
+    success: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38d39f" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+    warning: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f6c85f" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+    danger: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff6b78" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`
+};
+
+function toast(msg, type="info"){
+    let n = document.createElement("div");
+    n.className = `toast ${type}`;
+    n.innerHTML = `<div class="toast-icon">${SVG_ICONS[type] || SVG_ICONS.info}</div><div class="toast-content">${esc(msg)}</div>`;
+    $("toasts").append(n);
+    setTimeout(() => {
+        n.style.opacity = "0";
+        n.style.transform = "translateX(100%)";
+        n.style.transition = "all 0.3s ease";
+        setTimeout(() => n.remove(), 300);
+    }, 4200);
+}
+
+function saveData(){
+    try{
+        localStorage.setItem(KEY,JSON.stringify(properties));
+        checkAutoBackup();
+    }catch(e){
+        toast("Falha ao salvar no armazenamento local.","danger");
+    }
+}
+
+function isAutoBackupEnabled(){
+    return localStorage.getItem(AUTO_BACKUP_STATE_KEY) === "true";
+}
+
+function toggleAutoBackup(){
+    const current = isAutoBackupEnabled();
+    const newState = !current;
+    localStorage.setItem(AUTO_BACKUP_STATE_KEY, String(newState));
+    updateAutoBackupUI();
+    if(newState){
+        performAutoBackup(true);
+        toast("Auto Backup ativado! Salvará a cada 24 horas no navegador.","success");
+    } else {
+        toast("Auto Backup desativado.","warning");
+    }
+}
+
+function updateAutoBackupUI(){
+    const btn = $("autoBackupBtn");
+    const label = $("autoBackupLabel");
+    if(isAutoBackupEnabled()){
+        btn.classList.add("btn-autobackup-active");
+        label.textContent = "🔄 Auto Backup: ON";
+    } else {
+        btn.classList.remove("btn-autobackup-active");
+        label.textContent = "🔄 Auto Backup: OFF";
+    }
+}
+
+function performAutoBackup(force = false){
+    if(!isAutoBackupEnabled() && !force) return;
+    const now = Date.now();
+    const lastBackup = Number(localStorage.getItem(LAST_BACKUP_TIME_KEY)) || 0;
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    if(force || (now - lastBackup >= twentyFourHours)){
+        try {
+            const backupPayload = {
+                app: "Controle IPTU RP Auto Backup",
+                version: 3,
+                autoBackupAt: new Date().toISOString(),
+                properties: properties
+            };
+            localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(backupPayload));
+            localStorage.setItem(LAST_BACKUP_TIME_KEY, String(now));
+        } catch(e) {}
+    }
+}
+
+function checkAutoBackup(){
+    performAutoBackup(false);
+}
+
+// Controle de Notificações Nativas do Navegador
+async function requestBrowserNotifications(){
+    if(!("Notification" in window)){
+        toast("Seu navegador não suporta notificações nativas.","warning");
+        return;
+    }
+    if(Notification.permission === "granted"){
+        toast("As notificações do navegador já estão ativadas!","success");
+        checkAndTriggerNativeAlerts(true);
+        return;
+    }
+    const permission = await Notification.requestPermission();
+    if(permission === "granted"){
+        toast("Notificações do navegador ativadas com sucesso!","success");
+        checkAndTriggerNativeAlerts(true);
+    } else {
+        toast("Permissão de notificação negada pelo navegador.","warning");
+    }
+}
+
+function checkAndTriggerNativeAlerts(forced = false){
+    if(!("Notification" in window) || Notification.permission !== "granted") return;
+    
+    const sessionKey = "controle_iptu_rp_notified_session";
+    if(!forced && sessionStorage.getItem(sessionKey)) return;
+
+    const urgent = properties.filter(p => status(p).days <= 7);
+    if(urgent.length > 0){
+        let title = "🏠 IPTU Casas Milgrau: Alertas Pendentes";
+        let body = `Existem ${urgent.length} imóvel(is) com IPTU vencido ou prestes a vencer!`;
+        
+        try {
+            new Notification(title, {
+                body: body,
+                icon: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png"
+            });
+            sessionStorage.setItem(sessionKey, "true");
+        } catch(e) {}
+    }
+}
+
+function load(){
+    try{
+        let raw=localStorage.getItem(KEY)||localStorage.getItem("controle_iptu_rp_imoveis_v2")||localStorage.getItem("controle_iptu_rp_imoveis");
+        let a=raw?JSON.parse(raw):[];
+        properties=Array.isArray(a)?a.map((p,i)=>({
+            ...p,
+            id:p.id??("imovel-"+i+"-"+Date.now()),
+            pid:String(p.pid??p.propertyId??""),
+            type:String(p.type??"Casa"),
+            name:String(p.name??""),
+            location:String(p.location??""),
+            value:Number(p.value)||0,
+            due:String(p.due??p.dueDate??today()),
+            image:String(p.image??''),
+            notes:String(p.notes??""),
+            history:Array.isArray(p.history)?p.history:(Array.isArray(p.paymentHistory)?p.paymentHistory:[])
+        })):[];
+        saveData();
+    }catch(e){properties=[];toast("Não foi possível ler os dados locais. Se tiver backup, importe-o.","warning")}
+}
+
+function reset(){ $("form").reset();editing=null;currentImageData="";$("formTitle").textContent="➕ Cadastrar imóvel";$("save").textContent="Salvar imóvel";$("cancel").hidden=true}
+function stats(){
+    $("total").textContent=properties.length;
+    $("sum").textContent=money(properties.reduce((s,p)=>s+p.value,0));
+    const soon = properties.filter(p=>{let d=status(p).days;return d>=0&&d<=7}).length;
+    const late = properties.filter(p=>status(p).days<0).length;
+    $("soonCount").textContent=soon;
+    $("lateCount").textContent=late;
+}
+
+function renderCards(){
+    let q=$("search").value.trim().toLocaleLowerCase("pt-BR"),filter=$("filter").value,sort=$("sort").value;
+    let a=properties.filter(p=>[p.pid,p.name,p.location,p.type].some(x=>String(x).toLocaleLowerCase("pt-BR").includes(q))).filter(p=>{let s=status(p);return filter==="all"||(filter==="late"&&s.key==="late")||(filter==="today"&&s.key==="today")||(filter==="soon"&&s.days>=0&&s.days<=7)||(filter==="ok"&&s.key==="ok")});
+    a.sort((x,y)=>sort==="name"?x.name.localeCompare(y.name,"pt-BR"):sort==="value"?y.value-x.value:x.due.localeCompare(y.due));
+    $("visible").textContent=`${a.length} ${a.length===1?"imóvel":"imóveis"}`;
+    let root=$("cards");root.replaceChildren();
+    if(!a.length){root.innerHTML=`<div class="empty">${properties.length?"🔎 Nenhum imóvel corresponde à pesquisa ou filtro.":"🏠 Nenhum imóvel cadastrado. Use o formulário para começar."}</div>`;return}
+    
+    a.forEach(p=>{
+        let s=status(p),el=document.createElement("article");
+        el.className="property";
+        let propType = p.type || 'Casa';
+        let typeEmoji = propType === 'Mansão' ? '🏰' : propType === 'Apartamento' ? '🏢' : '🏠';
+        let imgTag = p.image ? `<img src="${p.image}" class="cardimg" alt="Foto do imóvel">` : '';
+        
+        el.innerHTML=`
+            ${imgTag}
+            <div class="cardtop">
+                <div>
+                    <div style="font-size:11px; font-weight:700; color:var(--blue); margin-bottom:2px;">${typeEmoji} ${esc(propType)}</div>
+                    <div class="cardtitle">${esc(p.name)}</div>
+                    <div class="id">🆔 ID: ${esc(p.pid||"Não informado")}</div>
+                    <div class="loc">📍 ${esc(p.location)}</div>
+                </div>
+                <span class="badge ${s.key}">${s.icon} ${esc(s.label)}</span>
+            </div>
+            <div class="details">
+                <div class="detail"><small>Valor do IPTU</small><strong>${money(p.value)}</strong></div>
+                <div class="detail"><small>Vencimento</small><strong>${dateFmt(p.due)}</strong></div>
+            </div>
+            ${p.notes?`<div class="notes">${esc(p.notes)}</div>`:""}
+            <div class="buttons">
+                <button class="btn primary small" data-a="pay" data-id="${esc(p.id)}">💰 Pagamento</button>
+                <button class="btn small" data-a="history" data-id="${esc(p.id)}">🧾 Histórico (${p.history.length})</button>
+                <button class="btn small" data-a="edit" data-id="${esc(p.id)}">✏️ Editar</button>
+                <button class="btn danger small" data-a="delete" data-id="${esc(p.id)}">🗑️ Excluir</button>
+            </div>`;
+        root.append(el);
+    })
+}
+
+function renderAlerts(){
+    let root=$("alerts");root.replaceChildren();
+    let a=properties.filter(p=>status(p).days<=7).sort((x,y)=>x.due.localeCompare(y.due));
+    $("alertCount").textContent=`${a.length} ${a.length===1?"alerta":"alertas"}`;
+    if(!a.length){root.innerHTML='<div class="empty">✨ Nenhum alerta por enquanto.</div>';return}
+    a.forEach(p=>{
+        let s=status(p),el=document.createElement("div");
+        el.className=`alert ${s.key}`;
+        let propType = p.type || 'Casa';
+        let typeEmoji = propType === 'Mansão' ? '🏰' : propType === 'Apartamento' ? '🏢' : '🏠';
+        el.innerHTML=`<span>${s.icon}</span><div class="alerttext"><div class="alerttitle">${typeEmoji} ${esc(p.name)} • ID ${esc(p.pid)} (${esc(propType)})</div><div class="alertdesc">${esc(s.label)} • ${dateFmt(p.due)} • ${money(p.value)}</div></div><button class="payalert" data-pay="${esc(p.id)}" type="button">💰 Efetuar pagamento</button>`;
+        root.append(el)
+    })
+}
+
+function render(){stats();renderCards();renderAlerts()}
+function find(id){return properties.find(p=>String(p.id)===String(id))}
+function duplicate(pid,except){return properties.some(p=>p.pid.trim().toLocaleLowerCase("pt-BR")===pid.trim().toLocaleLowerCase("pt-BR")&&String(p.id)!==String(except))}
+
+$("form").addEventListener("submit",e=>{
+    e.preventDefault();
+    let pid=f.pid.value.trim(),type=f.type.value,name=f.name.value.trim(),location=f.location.value.trim(),value=Number(f.value.value),due=f.due.value,notes=f.notes.value.trim();
+    if(!pid||!name||!location||!due||f.value.value===""||!Number.isFinite(value)||value<0){toast("Confira os campos obrigatórios.","warning");return}
+    if(duplicate(pid,editing)){toast("Este ID já está cadastrado. Informe um ID único.","warning");f.pid.focus();return}
+    
+    if(editing){
+        let p=find(editing);
+        if(!p)return;
+        Object.assign(p,{pid,type,name,location,value,due,notes,image:currentImageData||p.image||""});
+        toast("Imóvel atualizado com sucesso.","success");
+    }else{
+        properties.push({
+            id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),
+            pid,type,name,location,value,due,
+            image:currentImageData||"",
+            notes,
+            createdAt:new Date().toISOString(),
+            history:[]
+        });
+        toast("Imóvel cadastrado com sucesso.","success");
+    }
+    saveData();reset();render();
+});
+
+$("cancel").addEventListener("click",reset);
+["search","filter","sort"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",renderCards));
+
+function pay(id){
+    let p=find(id);if(!p)return;
+    let valueText=prompt(`Registrar pagamento de ${p.name} (ID ${p.pid}).\nValor previsto: ${money(p.value)}\nInforme o valor efetivamente pago:`,p.value.toFixed(2).replace(".",","));
+    if(valueText===null)return;
+    let raw=valueText.trim().replace(/\./g,"").replace(",",".");
+    let paid=Number(raw);
+    if(!raw||!Number.isFinite(paid)||paid<0){toast("Valor de pagamento inválido.","warning");return}
+    let paidOn=today();
+    if(!confirm(`Confirmar pagamento de ${money(paid)} em ${dateFmt(paidOn)}?\nO próximo vencimento será em 13 dias.`))return;
+    let d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+CYCLE);
+    let next=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    p.history.unshift({paidOn,paidValue:paid,previousDue:p.due,nextDue:next,cycleDays:CYCLE});
+    p.due=next;
+    saveData();render();
+    toast(`Pagamento registrado. Próximo vencimento: ${dateFmt(next)}.`,"success");
+}
+
+function edit(id){
+    let p=find(id);if(!p)return;
+    editing=p.id;
+    f.pid.value=p.pid;
+    f.type.value=p.type||"Casa";
+    f.name.value=p.name;
+    f.location.value=p.location;
+    f.value.value=p.value;
+    f.due.value=p.due;
+    f.notes.value=p.notes||"";
+    currentImageData=p.image||"";
+    $("formTitle").textContent="✏️ Editar imóvel";
+    $("save").textContent="Salvar alterações";
+    $("cancel").hidden=false;
+    $("formPanel").scrollIntoView({behavior:"smooth"});
+    f.pid.focus();
+}
+
+function del(id){
+    let p=find(id);if(!p||!confirm(`Excluir "${p.name}" (ID ${p.pid})? Esta ação não pode ser desfeita.`))return;
+    properties=properties.filter(x=>String(x.id)!==String(id));
+    if(String(editing)===String(id))reset();
+    saveData();render();
+    toast("Imóvel excluído.","danger");
+}
+
+function history(id){
+    let p=find(id);if(!p)return;
+    $("modalTitle").textContent=`🧾 Histórico • ${p.name} (ID ${p.pid})`;
+    let b=$("modalBody");b.replaceChildren();
+    if(!p.history.length)b.innerHTML='<div class="empty">Nenhum pagamento registrado.</div>';
+    else p.history.forEach(h=>{
+        let row=document.createElement("div");
+        row.className="history";
+        row.innerHTML=`<strong>${money(h.paidValue??h.value)}</strong><div class="muted">Pago em ${dateFmt(h.paidOn??h.date)}</div><div class="muted">Vencimento anterior: ${dateFmt(h.previousDue??h.previousDueDate)}</div><div class="muted">Próximo vencimento: ${dateFmt(h.nextDue??h.nextDueDate)}</div>`;
+        b.append(row);
+    });
+    $("backdrop").classList.add("open");
+}
+
+// ENVIO DE BACKUP POR E-MAIL CONFIGURADO COM SUAS CHAVES REAIS
+$("sendEmailBtn").addEventListener("click", async () => {
+    const userEmail = prompt("Digite o e-mail para onde deseja enviar a cópia do seu backup:");
+    if (!userEmail) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userEmail.trim())) {
+        toast("Endereço de e-mail inválido.","warning");
+        return;
+    }
+
+    toast("Preparando e enviando backup para o e-mail...","info");
+
+    const backupObj = {
+        app: "Controle IPTU RP",
+        version: 3,
+        exportedAt: new Date().toISOString(),
+        properties: properties
+    };
+    const backupJsonStr = JSON.stringify(backupObj, null, 2);
+
+    if (window.emailjs && window.emailjs.send) {
+        const templateParams = {
+            to_email: userEmail.trim(),
+            message: `Olá! Segue a cópia de segurança do seu Controle de IPTU RP exportada em ${new Date().toLocaleString('pt-BR')}.\n\nPara importar no sistema, basta salvar o texto abaixo em um arquivo .json ou colar no importador:\n\n` + backupJsonStr
+        };
+
+        try {
+            await emailjs.send('serviço_3pa807g', 'modelo_uer5fwg', templateParams);
+            toast(`Backup enviado com sucesso para ${userEmail.trim()}!`,"success");
+        } catch (err) {
+            triggerMailtoFallback(userEmail.trim(), backupJsonStr);
+        }
+    } else {
+        triggerMailtoFallback(userEmail.trim(), backupJsonStr);
+    }
+});
+
+function triggerMailtoFallback(email, jsonContent){
+    const subject = encodeURIComponent("Backup Controle IPTU CASAS MILGRAU");
+    const body = encodeURIComponent("Segue o backup dos seus imóveis cadastrados:\n\n" + jsonContent.substring(0, 1500) + "\n\n(Texto reduzido para envio seguro via e-mail).");
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    toast("Cliente de e-mail aberto para envio seguro.","success");
+}
+
+$("autoBackupBtn").addEventListener("click", toggleAutoBackup);
+$("browserNotifyBtn").addEventListener("click", requestBrowserNotifications);
+
+$("close").addEventListener("click",()=>$("backdrop").classList.remove("open"));
+$("backdrop").addEventListener("click",e=>{if(e.target===$("backdrop"))$("backdrop").classList.remove("open")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("backdrop").classList.remove("open")});
+
+$("cards").addEventListener("click",e=>{
+    let b=e.target.closest("button[data-a]");if(!b)return;
+    let id=b.dataset.id;
+    ({pay:()=>pay(id),history:()=>history(id),edit:()=>edit(id),delete:()=>del(id)})[b.dataset.a]?.();
+});
+
+$("alerts").addEventListener("click",e=>{let b=e.target.closest("[data-pay]");if(b)pay(b.dataset.pay)});
+
+$("export").addEventListener("click",()=>{
+    let blob=new Blob([JSON.stringify({app:"Controle IPTU RP",version:3,exportedAt:new Date().toISOString(),properties},null,2)],{type:"application/json"});
+    let url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=`backup-controle-iptu-rp-${today()}.json`;
+    document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast("Backup exportado com sucesso (fotos inclusas no arquivo).","success");
+});
+
+$("import").addEventListener("click",()=>$("file").click());
+$("file").addEventListener("change",async e=>{
+    let file=e.target.files[0];if(!file)return;
+    try{
+        let data=JSON.parse(await file.text()),arr=Array.isArray(data)?data:data.properties;
+        if(!Array.isArray(arr))throw Error("Formato de arquivo inválido");
+        let cleaned=arr.map((p,i)=>{
+            let properDue = p.due || p.dueDate;
+            if(!p||!p.name||!p.location||!properDue)throw Error(`Dados inválidos no registro ${i+1}`);
+            return{
+                ...p,
+                id:p.id??("import-"+Date.now()+"-"+i),
+                pid:String(p.pid??p.propertyId??`IMPORTADO-${i+1}`),
+                type:String(p.type??"Casa"),
+                name:String(p.name),
+                location:String(p.location),
+                value:Number(p.value)||0,
+                due:String(properDue),
+                image:String(p.image??""),
+                notes:String(p.notes??""),
+                history:Array.isArray(p.history)?p.history:(Array.isArray(p.paymentHistory)?p.paymentHistory:[])
+            }
+        });
+        let seen=new Set();
+        for(let p of cleaned){let k=p.pid.trim().toLocaleLowerCase("pt-BR");if(seen.has(k))throw Error("ID duplicado: "+p.pid);seen.add(k)}
+        if(!confirm(`Importar ${cleaned.length} imóvel(is)? Isso substituirá os registros atuais.`))return;
+        properties=cleaned;reset();saveData();render();
+        toast("Backup importado com sucesso.","success");
+    }catch(err){
+        toast("Falha na importação: "+err.message,"danger");
+    }finally{e.target.value=""}
+});
+
+function initClock() {
+    function updateClock() {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('pt-BR', options);
+        const timeStr = now.toLocaleTimeString('pt-BR', { hour12: false });
+        const formattedDate = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+        const dateEl = $("clockDate");
+        const timeEl = $("clockTime");
+        if(dateEl) dateEl.innerText = formattedDate;
+        if(timeEl) timeEl.innerText = timeStr;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+}
+
+load();
+initClock();
+updateAutoBackupUI();
+checkAutoBackup();
+render();
+checkAndTriggerNativeAlerts(false);
+})();
+</script></body></html>
