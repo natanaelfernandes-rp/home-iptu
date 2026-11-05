@@ -57,8 +57,8 @@
 <div><label for="name">Nome do imóvel *</label><input id="name" required maxlength="100" placeholder="Ex.: Casa da praça"></div>
 <div><label for="location">Localização *</label><input id="location" required maxlength="150" placeholder="Rua, bairro ou referência"></div>
 <div class="row"><div><label for="value">Valor do IPTU (R$) *</label><input id="value" type="number" required min="0" step=".01" placeholder="500.00"></div><div><label for="due">Próximo vencimento *</label><input id="due" type="date" required></div></div>
-<div><label for="imageFile">Enviar foto do imóvel (Salva internamente)</label><input id="imageFile" type="file" accept="image/*"></div>
-<div><label for="notes">Observações</label><textarea id="notes" maxlength="1000" placeholder="Opcional"></textarea></div><div class="formbuttons"><button class="btn primary" id="save" type="submit">Salvar imóvel</button><button class="btn" id="cancel" type="button" hidden>Cancelar</button></div><p class="hint">A foto é armazenada internamente no navegador e no backup JSON.</p></form></div></section>
+<div><label for="imageUrl">Link da foto do imóvel (URL)</label><input id="imageUrl" type="url" placeholder="https://i.imgur.com/... ou link direto da imagem"></div>
+<div><label for="notes">Observações</label><textarea id="notes" maxlength="1000" placeholder="Opcional"></textarea></div><div class="formbuttons"><button class="btn primary" id="save" type="submit">Salvar imóvel</button><button class="btn" id="cancel" type="button" hidden>Cancelar</button></div><p class="hint">Use um link de imagem válido (ex: Imgur ou Discord) para economizar espaço e evitar perda de dados.</p></form></div></section>
 <div><section class="panel"><div class="head"><h2>🚨 Alertas de vencimento</h2><span class="badge soon" id="alertCount">0 alertas</span></div><div class="alerts" id="alerts"><div class="empty">✨ Nenhum alerta por enquanto.</div></div></section>
 <section class="panel gap"><div class="head"><h2>🏡 Imóveis cadastrados</h2><span class="badge ok" id="visible">0 imóveis</span></div><div class="toolbar"><input id="search" type="search" placeholder="🔎 Pesquisar por ID, nome, tipo ou localização"><select id="filter"><option value="all">Todos os imóveis</option><option value="late">Vencidos</option><option value="today">Vencem hoje</option><option value="soon">Próximos (7 dias)</option><option value="ok">Em dia</option></select><select id="sort"><option value="due">Ordenar por vencimento</option><option value="name">Ordenar por nome</option><option value="value">Ordenar por valor</option></select></div><div class="cards" id="cards"><div class="empty">🏠 Nenhum imóvel cadastrado. Use o formulário para começar.</div></div></section></div></main>
 <footer class="footer">
@@ -71,23 +71,11 @@
 (()=>{"use strict";
 const KEY="controle_iptu_rp_imoveis_v3",AUTO_BACKUP_KEY="controle_iptu_rp_auto_backup",AUTO_BACKUP_STATE_KEY="controle_iptu_rp_autobackup_enabled",LAST_BACKUP_TIME_KEY="controle_iptu_rp_last_autobackup_time",CYCLE=13,$=id=>document.getElementById(id);
 let properties=[],editing=null;
-let currentImageData = "";
 
 // Inicializar EmailJS com a sua Chave Pública real
 if(window.emailjs){ emailjs.init("aKx6Ym4lHGnMaRw5g"); }
 
-const f={pid:$("pid"),type:$("type"),name:$("name"),location:$("location"),value:$("value"),due:$("due"),imageFile:$("imageFile"),notes:$("notes")};
-
-f.imageFile.addEventListener("change", (e)=>{
-    const file = e.target.files[0];
-    if(file){
-        const reader = new FileReader();
-        reader.onload = function(uploadEvent){
-            currentImageData = uploadEvent.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-});
+const f={pid:$("pid"),type:$("type"),name:$("name"),location:$("location"),value:$("value"),due:$("due"),imageUrl:$("imageUrl"),notes:$("notes")};
 
 const money=n=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(n)||0);
 const today=()=>{let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
@@ -232,7 +220,7 @@ function load(){
             location:String(p.location??""),
             value:Number(p.value)||0,
             due:String(p.due??p.dueDate??today()),
-            image:String(p.image??''),
+            image:String(p.image??p.imageUrl??''),
             notes:String(p.notes??""),
             history:Array.isArray(p.history)?p.history:(Array.isArray(p.paymentHistory)?p.paymentHistory:[])
         })):[];
@@ -240,7 +228,7 @@ function load(){
     }catch(e){properties=[];toast("Não foi possível ler os dados locais. Se tiver backup, importe-o.","warning")}
 }
 
-function reset(){ $("form").reset();editing=null;currentImageData="";$("formTitle").textContent="➕ Cadastrar imóvel";$("save").textContent="Salvar imóvel";$("cancel").hidden=true}
+function reset(){ $("form").reset();editing=null;$("formTitle").textContent="➕ Cadastrar imóvel";$("save").textContent="Salvar imóvel";$("cancel").hidden=true}
 function stats(){
     $("total").textContent=properties.length;
     $("sum").textContent=money(properties.reduce((s,p)=>s+p.value,0));
@@ -263,7 +251,7 @@ function renderCards(){
         el.className="property";
         let propType = p.type || 'Casa';
         let typeEmoji = propType === 'Mansão' ? '🏰' : propType === 'Apartamento' ? '🏢' : '🏠';
-        let imgTag = p.image ? `<img src="${p.image}" class="cardimg" alt="Foto do imóvel">` : '';
+        let imgTag = p.image ? `<img src="${esc(p.image)}" class="cardimg" alt="Foto do imóvel" onerror="this.style.display='none'">` : '';
         
         el.innerHTML=`
             ${imgTag}
@@ -312,20 +300,20 @@ function duplicate(pid,except){return properties.some(p=>p.pid.trim().toLocaleLo
 
 $("form").addEventListener("submit",e=>{
     e.preventDefault();
-    let pid=f.pid.value.trim(),type=f.type.value,name=f.name.value.trim(),location=f.location.value.trim(),value=Number(f.value.value),due=f.due.value,notes=f.notes.value.trim();
+    let pid=f.pid.value.trim(),type=f.type.value,name=f.name.value.trim(),location=f.location.value.trim(),value=Number(f.value.value),due=f.due.value,imageUrl=f.imageUrl.value.trim(),notes=f.notes.value.trim();
     if(!pid||!name||!location||!due||f.value.value===""||!Number.isFinite(value)||value<0){toast("Confira os campos obrigatórios.","warning");return}
     if(duplicate(pid,editing)){toast("Este ID já está cadastrado. Informe um ID único.","warning");f.pid.focus();return}
     
     if(editing){
         let p=find(editing);
         if(!p)return;
-        Object.assign(p,{pid,type,name,location,value,due,notes,image:currentImageData||p.image||""});
+        Object.assign(p,{pid,type,name,location,value,due,notes,image:imageUrl});
         toast("Imóvel atualizado com sucesso.","success");
     }else{
         properties.push({
             id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),
             pid,type,name,location,value,due,
-            image:currentImageData||"",
+            image:imageUrl,
             notes,
             createdAt:new Date().toISOString(),
             history:[]
@@ -340,13 +328,22 @@ $("cancel").addEventListener("click",reset);
 
 function pay(id){
     let p=find(id);if(!p)return;
-    let valueText=prompt(`Registrar pagamento de ${p.name} (ID ${p.pid}).\nValor previsto: ${money(p.value)}\nInforme o valor efetivamente pago:`,p.value.toFixed(2).replace(".",","));
+    
+    // Trava de confirmação customizada com orientações in-game da Milgrau RP
+    let confirmacao = confirm(
+        `⚠️ CONFIRMAÇÃO DE PAGAMENTO\n\n` +
+        `Você já efetuou o pagamento do IPTU do imóvel "${p.name}" (ID: ${p.pid}) in-game na Milgrau RP?\n\n` +
+        `💡 Dica: Use /home iptu ou home iptu no F8 in-game para verificar e pagar seus imóveis.\n\n` +
+        `Deseja confirmar a baixa no sistema?`
+    );
+    if(!confirmacao)return;
+
+    let valueText=prompt(`Informe o valor efetivamente pago:`,p.value.toFixed(2).replace(".",","));
     if(valueText===null)return;
     let raw=valueText.trim().replace(/\./g,"").replace(",",".");
     let paid=Number(raw);
     if(!raw||!Number.isFinite(paid)||paid<0){toast("Valor de pagamento inválido.","warning");return}
     let paidOn=today();
-    if(!confirm(`Confirmar pagamento de ${money(paid)} em ${dateFmt(paidOn)}?\nO próximo vencimento será em 13 dias.`))return;
     let d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+CYCLE);
     let next=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
     p.history.unshift({paidOn,paidValue:paid,previousDue:p.due,nextDue:next,cycleDays:CYCLE});
@@ -364,8 +361,8 @@ function edit(id){
     f.location.value=p.location;
     f.value.value=p.value;
     f.due.value=p.due;
+    f.imageUrl.value=p.image||"";
     f.notes.value=p.notes||"";
-    currentImageData=p.image||"";
     $("formTitle").textContent="✏️ Editar imóvel";
     $("save").textContent="Salvar alterações";
     $("cancel").hidden=false;
@@ -395,7 +392,7 @@ function history(id){
     $("backdrop").classList.add("open");
 }
 
-// ENVIO DE BACKUP POR E-MAIL CONFIGURADO COM SUAS CHAVES REAIS
+// ENVIO DE BACKUP POR E-MAIL CONFIGURADO COM TRATAMENTO ROBUSTO
 $("sendEmailBtn").addEventListener("click", async () => {
     const userEmail = prompt("Digite o e-mail para onde deseja enviar a cópia do seu backup:");
     if (!userEmail) return;
@@ -426,6 +423,7 @@ $("sendEmailBtn").addEventListener("click", async () => {
             await emailjs.send('serviço_3pa807g', 'modelo_uer5fwg', templateParams);
             toast(`Backup enviado com sucesso para ${userEmail.trim()}!`,"success");
         } catch (err) {
+            console.error("Erro EmailJS:", err);
             triggerMailtoFallback(userEmail.trim(), backupJsonStr);
         }
     } else {
@@ -461,7 +459,7 @@ $("export").addEventListener("click",()=>{
     a.href=url;a.download=`backup-controle-iptu-rp-${today()}.json`;
     document.body.append(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
-    toast("Backup exportado com sucesso (fotos inclusas no arquivo).","success");
+    toast("Backup exportado com sucesso.","success");
 });
 
 $("import").addEventListener("click",()=>$("file").click());
@@ -482,7 +480,7 @@ $("file").addEventListener("change",async e=>{
                 location:String(p.location),
                 value:Number(p.value)||0,
                 due:String(properDue),
-                image:String(p.image??""),
+                image:String(p.image??p.imageUrl??""),
                 notes:String(p.notes??""),
                 history:Array.isArray(p.history)?p.history:(Array.isArray(p.paymentHistory)?p.paymentHistory:[])
             }
